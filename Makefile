@@ -1,8 +1,7 @@
-CC = gcc
-CFLAGS = -std=c99
+CC = g++
+CFLAGS = -c
 
-mandelbrot: mandelbrot.c
-	$(CC) $(CFLAGS) mandelbrot.c -o mandelbrot
-
-clean:
-	rm -f mandelbrot
+main: main.cpp
+	$(CC) $(CFLAGS) main.cpp -I SFML/include
+	$(CC) main.o -o sfml-app -L SFML/lib -lsfml-graphics -lsfml-window -lsfml-system
+	export LD_LIBRARY_PATH=SFML/lib && ./sfml-app
