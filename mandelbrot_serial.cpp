@@ -35,7 +35,7 @@ int main()
 	int recLevel = 1;
 	int precision = 64;
 
-	mandelTexture = mandelbrot(width, height, oxmin, oxmax, oymin, oymax, 100);
+	mandelTexture = mandelbrot(width, height, oxmin, oxmax, oymin, oymax, precision);
 
 
 
@@ -53,7 +53,7 @@ int main()
 				if (evnt.key.code == sf::Keyboard::Key::O)
 				{
 					recLevel = 1;
-					precision = 128;
+					precision = 64;
 
 					xmin = oxmin;
 					xmax = oxmax;
@@ -66,11 +66,11 @@ int main()
 			case sf::Event::MouseWheelScrolled:
 				if (evnt.mouseWheelScroll.delta <= 0)
 				{
-					precision -= 2;
+					precision -= 10;
 				}
 				else
 				{
-					precision += 2;
+					precision += 10;
 				}
 				mandelTexture = mandelbrot(width, height, xmin, xmax, ymin, ymax, precision);
 				break;
