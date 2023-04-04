@@ -1,7 +1,14 @@
 CC = g++
 CFLAGS = -c
 
-mandelbrot: mandelbrot.cpp
-	$(CC) $(CFLAGS) mandelbrot.cpp -I SFML/include
-	$(CC) mandelbrot.o -o sfml-app -L SFML/lib -lsfml-graphics -lsfml-window -lsfml-system
-	export LD_LIBRARY_PATH=SFML/lib && ./sfml-app
+all: mandelbrot_serial mandelbrot_cuda
+
+mandelbrot_serial: mandelbrot_serial.cpp
+	$(CC) $(CFLAGS) mandelbrot_serial.cpp -I SFML/include
+	$(CC) mandelbrot_serial.o -o mandel_serial -L SFML/lib -lsfml-graphics -lsfml-window -lsfml-system
+	export LD_LIBRARY_PATH=SFML/lib
+
+mandelbrot_cuda: mandelbrot_cuda.cu
+	nvcc mandelbrot_cuda.cu -c --expt-relaxed-constexpr -I SFML/include
+	nvcc mandelbrot_cuda.o -o mandel_cuda -L SFML/lib -lsfml-graphics -lsfml-window -lsfml-system
+	export LD_LIBRARY_PATH=SFML/lib && ./mandel_cuda
