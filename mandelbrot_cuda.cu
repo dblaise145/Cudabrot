@@ -3,19 +3,18 @@
 #include <iostream>
 
 __device__ void HSVtoRGB(int* red, int* green, int* blue, float H, float S, float V);
-double normalize(double value, double localMin, double localMax, double min, double max);
 __device__ double mandelIter(double cx, double cy, int maxIter);
 sf::Texture mandelbrot(int width, int height, double xmin, double xmax, double ymin, double ymax, int iterations);
 __global__ void mandel_kernel(int width, int height, double xmin, double xmax, double ymin, double ymax, int iterations, sf::Uint8* pixels);
 
 int main()
 {
-	unsigned int width = 1600; 
+	unsigned int width = 1600;
 	unsigned int height = 900;
 
 	sf::RenderWindow window(sf::VideoMode(width, height), "mandelbrot");
 
-	window.setFramerateLimit(60);
+	window.setFramerateLimit(144);
 
 	sf::Texture mandelTexture;
 	sf::Sprite mandelSprite;
@@ -37,7 +36,7 @@ int main()
 	int recLevel = 1;
 	int precision = 64;
 
-	mandelTexture = mandelbrot(width, height, oxmin, oxmax, oymin, oymax, 100);
+	mandelTexture = mandelbrot(width, height, oxmin, oxmax, oymin, oymax, precision);
 
 
 
@@ -70,6 +69,10 @@ int main()
 				if (evnt.mouseWheelScroll.delta <= 0)
 				{
 					precision -= 2;
+          if (precision == 0)
+          {
+            exit(0);
+          }
 				}
 				else
 				{
@@ -91,14 +94,6 @@ int main()
 	}
 
 	return 0;
-}
-
-double normalize(double value, double localMin, double localMax, double min, double max)
-{
-	double normalized = (value - localMin) / (localMax - localMin);
-	normalized = normalized * (max - min);
-	normalized += min;
-	return normalized;
 }
 
 __device__
@@ -165,9 +160,9 @@ void mandel_kernel(int width, int height, double xmin, double xmax, double ymin,
     int G;
     int B;
     HSVtoRGB(&R, &G, &B, hue, sat, val);
-    pixels[ppos] = R;
+    pixels[ppos] = B;
     pixels[ppos + 1] = G;
-    pixels[ppos + 2] = B;
+    pixels[ppos + 2] = R;
     pixels[ppos + 3] = 255;
 	}
 }
