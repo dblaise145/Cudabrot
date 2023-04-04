@@ -69,11 +69,11 @@ int main()
 			case sf::Event::MouseWheelScrolled:
 				if (evnt.mouseWheelScroll.delta <= 0)
 				{
-					precision /= 2;
+					precision -= 2;
 				}
 				else
 				{
-					precision *= 2;
+					precision += 2;
 				}
 				mandelTexture = mandelbrot(width, height, xmin, xmax, ymin, ymax, precision);
 				break;
@@ -131,6 +131,7 @@ sf::Texture mandelbrot(int width, int height, double xmin, double xmax, double y
   cudaMallocManaged(&pixels, sizeof(sf::Uint8)*(width * height * 4));
 
   mandel_kernel<<<8, 128>>>(width, height, xmin, xmax, ymin, ymax, iterations, pixels);
+  cudaDeviceSynchronize();
 
 
 	texture.update(pixels, width, height, 0, 0);
@@ -144,8 +145,9 @@ sf::Texture mandelbrot(int width, int height, double xmin, double xmax, double y
 __global__
 void mandel_kernel(int width, int height, double xmin, double xmax, double ymin, double ymax, int iterations, sf::Uint8* pixels)
 {
-  int i = blockIdx.x * blockDim.x + threadIdx.x;
-	for (; i < width * height; i += blockDim.x * gridDim.x)
+  int i = (blockIdx.y * blockDim.y + threadIdx.y) * blockDim.x * gridDim.x + 
+        (blockIdx.x * blockDim.x + threadIdx.x);
+	for (; i < width * height; i += blockDim.x * gridDim.x  * blockDim.y * gridDim.y)
 	{
     int row = i / width;
     int col = i % width;

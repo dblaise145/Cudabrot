@@ -66,11 +66,11 @@ int main()
 			case sf::Event::MouseWheelScrolled:
 				if (evnt.mouseWheelScroll.delta <= 0)
 				{
-					precision /= 2;
+					precision -= 2;
 				}
 				else
 				{
-					precision *= 2;
+					precision += 2;
 				}
 				mandelTexture = mandelbrot(width, height, xmin, xmax, ymin, ymax, precision);
 				break;
