@@ -1,6 +1,7 @@
 #include <SFML/Graphics.hpp>
 #include <math.h>
 #include <iostream>
+#include "timer.h"
 
 __device__ void HSVtoRGB(int* red, int* green, int* blue, float H, float S, float V);
 __device__ double mandelIter(double cx, double cy, int maxIter);
@@ -40,6 +41,7 @@ int main()
 
 
 
+
 	while (window.isOpen())
 	{
 		sf::Event evnt;
@@ -68,7 +70,7 @@ int main()
 			case sf::Event::MouseWheelScrolled:
 				if (evnt.mouseWheelScroll.delta <= 0)
 				{
-					precision -= 10;
+					precision /= 2;
           if (precision <= 4)
           {
             exit(0);
@@ -76,7 +78,7 @@ int main()
 				}
 				else
 				{
-					precision += 10;
+					precision *= 2;
 				}
 				mandelTexture = mandelbrot(width, height, xmin, xmax, ymin, ymax, precision);
 				break;
@@ -116,7 +118,7 @@ double mandelIter(double cx, double cy, int maxIter) {
 }
 
 
-sf::Texture mandelbrot(int width, int height, double xmin, double xmax, double ymin, double ymax, int iterations)
+sf::Texture mandelbrot(int width, int height, double xmin, double xmax, double ymin, double ymax, int precision)
 {
 	sf::Texture texture;
 	texture.create(width, height);
@@ -125,8 +127,11 @@ sf::Texture mandelbrot(int width, int height, double xmin, double xmax, double y
 
   cudaMallocManaged(&pixels, sizeof(sf::Uint8)*(width * height * 4));
 
-  mandel_kernel<<<8, 128>>>(width, height, xmin, xmax, ymin, ymax, iterations, pixels);
+  START_TIMER(prec);
+  mandel_kernel<<<4, 256>>>(width, height, xmin, xmax, ymin, ymax, precision, pixels);
   cudaDeviceSynchronize();
+  STOP_TIMER(prec);
+  printf("PREC: %d TIME: %8.4fs\n", precision,  GET_TIMER(prec));
 
 
 	texture.update(pixels, width, height, 0, 0);
