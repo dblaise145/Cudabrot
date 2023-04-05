@@ -1,13 +1,12 @@
 1. Download Visual Studio to install C++ tools
     https://visualstudio.microsoft.com/downloads/
 
-2. Download nvcc from Nvidia (use custom install)
+2. Download nvcc from Nvidia (use custom install, pick everything except GeForce Experience)
     https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/
 
 3. Make a Visual Studio project with a CUDA 12.1 Runtime Template (make sure to check place solution and project in same directory)
 
 4. Install SFML Visual C++ 15 (2017) using dynamic linking
-(Follow youtube video exactly for setup, but when editing properties, leave the platform set as x64 don't set it to Win32)
     https://www.sfml-dev.org/download/sfml/2.5.1/
   4a. Right click the Project Name in the Solution Explorer on the left side and click Properties
   4b. Set the configuration at the top to All Configurations and Platform to Active(x64)
