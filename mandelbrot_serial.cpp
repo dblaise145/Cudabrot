@@ -1,6 +1,7 @@
 #include <SFML/Graphics.hpp>
 #include <math.h>
 #include <iostream>
+#include "timer.h"
 
 sf::Color HSVtoRGB(float H, float S, float V);
 double normalize(double value, double localMin, double localMax, double min, double max);
@@ -14,7 +15,7 @@ int main()
 
 	sf::RenderWindow window(sf::VideoMode(width, height), "mandelbrot");
 
-	window.setFramerateLimit(60);
+	window.setFramerateLimit(144);
 
 	sf::Texture mandelTexture;
 	sf::Sprite mandelSprite;
@@ -36,6 +37,8 @@ int main()
 	int precision = 64;
 
 	mandelTexture = mandelbrot(width, height, oxmin, oxmax, oymin, oymax, precision);
+
+
 
 
 
@@ -66,13 +69,18 @@ int main()
 			case sf::Event::MouseWheelScrolled:
 				if (evnt.mouseWheelScroll.delta <= 0)
 				{
-					precision -= 10;
+					precision /= 2;
+          if (precision <= 4)
+          {
+            exit(0);
+          }
 				}
 				else
 				{
-					precision += 10;
+					precision *= 2;
 				}
 				mandelTexture = mandelbrot(width, height, xmin, xmax, ymin, ymax, precision);
+
 				break;
 			}
 		}
@@ -123,6 +131,7 @@ sf::Texture mandelbrot(int width, int height, double xmin, double xmax, double y
 
 	sf::Uint8* pixels = new sf::Uint8[width * height * 4];
 
+  START_TIMER(prec);
 	for (int ix = 0; ix < width; ix++)
 	{
 		for (int iy = 0; iy < height; iy++)
@@ -144,6 +153,8 @@ sf::Texture mandelbrot(int width, int height, double xmin, double xmax, double y
 			pixels[ppos + 3] = 255;
 		}
 	}
+  STOP_TIMER(prec);
+  printf("PREC: %d TIME: %8.4fs\n", iterations,  GET_TIMER(prec));
 
 	texture.update(pixels, width, height, 0, 0);
 
