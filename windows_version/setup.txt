@@ -1,0 +1,21 @@
+1. Download Visual Studio to install C++ tools
+    https://visualstudio.microsoft.com/downloads/
+
+2. Download nvcc from Nvidia (use custom install)
+    https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/
+
+3. Make a Visual Studio project with a CUDA 12.1 Runtime Template (make sure to check place solution and project in same directory)
+
+4. Install SFML Visual C++ 15 (2017) using dynamic linking
+(Follow youtube video exactly for setup, but when editing properties, leave the platform set as x64 don't set it to Win32)
+    https://www.sfml-dev.org/download/sfml/2.5.1/
+  4a. Right click the Project Name in the Solution Explorer on the left side and click Properties
+  4b. Set the configuration at the top to All Configurations and Platform to Active(x64)
+  4c. Under CUDA C/C++, add the path to your SFML\include to the Additional Library Directories
+  4d. Under Linker, add the path to your SFML\lib to the Additional Library Directories
+  4e. Under Linker, then under Input, add sfml-graphics.lib, sfml-window.lib, sfml-system.lib to the Additional Dependencies
+  4f. Switch the Configuration to Debug, and change each of the files above to be sfml-xxx-d.lib, for example sfml-system-d.lib
+  4g. Add the mandelbrot_cuda file, compile code with Ctrl + Shift + B, execute with Ctrl + F5 (It won't work)
+  4g. Inside of SFML\bin, copy the dll files for graphics, system, and window (should be 6 files) and paste it inside the Release and Debug folders in "C:\Users\*name*\source\repos\ProjectName\x64" 
+
+5. Make sure the Config at the top is set to Debug x64 and run Ctrl + Shift + B, execute with Ctrl + F5
