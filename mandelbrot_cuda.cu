@@ -5,6 +5,7 @@
 
 __device__ void HSVtoRGB(int* red, int* green, int* blue, float H, float S, float V);
 __device__ double mandelIter(double cx, double cy, int maxIter);
+double normalize(double value, double localMin, double localMax, double min, double max);
 sf::Texture mandelbrot(int width, int height, double xmin, double xmax, double ymin, double ymax, int iterations);
 __global__ void mandel_kernel(int width, int height, double xmin, double xmax, double ymin, double ymax, int iterations, sf::Uint8* pixels);
 
@@ -19,6 +20,12 @@ int main()
 
 	sf::Texture mandelTexture;
 	sf::Sprite mandelSprite;
+
+  sf::RectangleShape zoomBorder(sf::Vector2f(width / 8, height / 8));
+	zoomBorder.setFillColor(sf::Color(0, 0, 0, 0));
+	zoomBorder.setOutlineColor(sf::Color(255, 255, 255, 128));
+	zoomBorder.setOutlineThickness(1.0f);
+	zoomBorder.setOrigin(sf::Vector2f(zoomBorder.getSize().x / 2, zoomBorder.getSize().y / 2));
 
 
 
@@ -38,6 +45,12 @@ int main()
 	int precision = 64;
 
 	mandelTexture = mandelbrot(width, height, oxmin, oxmax, oymin, oymax, precision);
+
+  sf::Text zoomText, precText;
+	zoomText.setFillColor(sf::Color::White);
+	precText.setFillColor(sf::Color::White);
+	zoomText.setCharacterSize(24);
+	precText.setCharacterSize(24);
 
 
 
@@ -85,17 +98,60 @@ int main()
 			}
 		}
 
+    if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+		{
+			recLevel++;
+
+			double x = zoomBorder.getPosition().x - zoomBorder.getSize().x / 2;
+			double y = zoomBorder.getPosition().y - zoomBorder.getSize().y / 2;
+
+			double x2 = x + zoomBorder.getSize().x;
+			double y2 = y + zoomBorder.getSize().y;
+
+			//from px range to grid range
+			double normX = normalize(x, 0.0, width, xmin, xmax);
+			double normY = normalize(y, 0.0, height, ymin, ymax);
+
+			double widthNorm = normalize(x2, 0.0, width, xmin, xmax);
+			double heightNorm = normalize(y2, 0.0, height, ymin, ymax);
+
+			xmin = normX;
+			xmax = widthNorm;
+			ymin = normY;
+			ymax = heightNorm;
+
+			mandelTexture = mandelbrot(width, height, xmin, xmax, ymin, ymax, precision);
+		}
+
+    zoomText.setString("Zoom: " + std::to_string(pow(8, recLevel-1)));
+		precText.setString("Max. Iterations: " + std::to_string(precision));
+		precText.setPosition(sf::Vector2f(0, 32));
+
+		zoomBorder.setPosition(sf::Mouse::getPosition(window).x, sf::Mouse::getPosition(window).y);
+
 
 		mandelSprite.setTexture(mandelTexture);
 
 		window.clear(sf::Color::White);
 
 		window.draw(mandelSprite);
+    window.draw(zoomText);
+		window.draw(precText);
+		window.draw(zoomBorder);
 
 		window.display();
 	}
 
 	return 0;
+}
+
+
+double normalize(double value, double localMin, double localMax, double min, double max)
+{
+	double normalized = (value - localMin) / (localMax - localMin);
+	normalized = normalized * (max - min);
+	normalized += min;
+	return normalized;
 }
 
 __device__
