@@ -10,8 +10,8 @@ __global__ void mandel_kernel(int width, int height, double xmin, double xmax, d
 
 int main()
 {
-	unsigned int width = 1600;
-	unsigned int height = 900;
+	unsigned int width = 1920;
+	unsigned int height = 1080;
 
 	sf::RenderWindow window(sf::VideoMode(width, height), "mandelbrot");
 
@@ -128,7 +128,7 @@ sf::Texture mandelbrot(int width, int height, double xmin, double xmax, double y
   cudaMallocManaged(&pixels, sizeof(sf::Uint8)*(width * height * 4));
 
   START_TIMER(prec);
-  mandel_kernel<<<4, 256>>>(width, height, xmin, xmax, ymin, ymax, precision, pixels);
+  mandel_kernel<<<512, 512>>>(width, height, xmin, xmax, ymin, ymax, precision, pixels);
   cudaDeviceSynchronize();
   STOP_TIMER(prec);
   printf("PREC: %d TIME: %8.4fs\n", precision,  GET_TIMER(prec));
@@ -145,9 +145,8 @@ sf::Texture mandelbrot(int width, int height, double xmin, double xmax, double y
 __global__
 void mandel_kernel(int width, int height, double xmin, double xmax, double ymin, double ymax, int iterations, sf::Uint8* pixels)
 {
-  int i = (blockIdx.y * blockDim.y + threadIdx.y) * blockDim.x * gridDim.x + 
-        (blockIdx.x * blockDim.x + threadIdx.x);
-	for (; i < width * height; i += blockDim.x * gridDim.x  * blockDim.y * gridDim.y)
+  int i = blockIdx.x * blockDim.x + threadIdx.x;
+	for (; i < width * height; i += blockDim.x * gridDim.x)
 	{
     int row = i / width;
     int col = i % width;
@@ -161,13 +160,11 @@ void mandel_kernel(int width, int height, double xmin, double xmax, double ymin,
     int hue = (int)(255 * i / iterations);
     int sat = 100;
     int val = (i > iterations) ? 0 : 100;
-    int R;
-    int G;
-    int B;
+    int R, G, B;
     HSVtoRGB(&R, &G, &B, hue, sat, val);
     pixels[ppos] = B;
     pixels[ppos + 1] = G;
-    pixels[ppos + 2] = R;
+    pixels[ppos + 2] = G*2;
     pixels[ppos + 3] = 255;
 	}
 }
