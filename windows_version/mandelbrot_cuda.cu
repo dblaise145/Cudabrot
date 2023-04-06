@@ -41,6 +41,7 @@ int main()
 
 	int recLevel = 1;
 	int precision = 64;
+	static bool lock_click;
 
 	mandelTexture = mandelbrot(width, height, oxmin, oxmax, oymin, oymax, precision);
 
@@ -92,31 +93,42 @@ int main()
 			}
 		}
 
-		if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+		if (evnt.type == sf::Event::MouseButtonPressed)
 		{
-			recLevel++;
+			if (evnt.mouseButton.button == sf::Mouse::Left && lock_click != true) //specifies
+      		{
+				recLevel++;
 
-			double x = zoomBorder.getPosition().x - zoomBorder.getSize().x / 2;
-			double y = zoomBorder.getPosition().y - zoomBorder.getSize().y / 2;
+				double x = zoomBorder.getPosition().x - zoomBorder.getSize().x / 2;
+				double y = zoomBorder.getPosition().y - zoomBorder.getSize().y / 2;
 
-			double x2 = x + zoomBorder.getSize().x;
-			double y2 = y + zoomBorder.getSize().y;
+				double x2 = x + zoomBorder.getSize().x;
+				double y2 = y + zoomBorder.getSize().y;
 
-			//from px range to grid range
-			double normX = normalize(x, 0.0, width, xmin, xmax);
-			double normY = normalize(y, 0.0, height, ymin, ymax);
+				//from px range to grid range
+				double normX = normalize(x, 0.0, width, xmin, xmax);
+				double normY = normalize(y, 0.0, height, ymin, ymax);
 
-			double widthNorm = normalize(x2, 0.0, width, xmin, xmax);
-			double heightNorm = normalize(y2, 0.0, height, ymin, ymax);
+				double widthNorm = normalize(x2, 0.0, width, xmin, xmax);
+				double heightNorm = normalize(y2, 0.0, height, ymin, ymax);
 
-			xmin = normX;
-			xmax = widthNorm;
-			ymin = normY;
-			ymax = heightNorm;
+				xmin = normX;
+				xmax = widthNorm;
+				ymin = normY;
+				ymax = heightNorm;
 
-			mandelTexture = mandelbrot(width, height, xmin, xmax, ymin, ymax, precision);
+				mandelTexture = mandelbrot(width, height, xmin, xmax, ymin, ymax, precision);
+				lock_click = true;
+			}
 		}
 
+		if (evnt.type == sf::Event::MouseButtonReleased) 
+  		{
+      		if (evnt.mouseButton.button == sf::Mouse::Left)
+      		{
+          		lock_click = false;
+      		}
+  		} //Released Scope
 		zoomText.setString("Zoom: " + std::to_string(pow(8, recLevel - 1)));
 		precText.setString("Max. Iterations: " + std::to_string(precision));
 		precText.setPosition(sf::Vector2f(0, 32));
@@ -177,7 +189,7 @@ sf::Texture mandelbrot(int width, int height, double xmin, double xmax, double y
 	cudaMallocManaged(&pixels, sizeof(sf::Uint8) * (width * height * 4));
 
 	auto start = std::chrono::high_resolution_clock::now();
-	mandel_kernel << <512, 512 >> > (width, height, xmin, xmax, ymin, ymax, precision, pixels);
+	mandel_kernel << <1024, 1024 >> > (width, height, xmin, xmax, ymin, ymax, precision, pixels);
 	cudaDeviceSynchronize();
 	auto end = std::chrono::high_resolution_clock::now();
 	auto elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
