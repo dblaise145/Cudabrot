@@ -6,13 +6,14 @@
 __device__ void HSVtoRGB(int* red, int* green, int* blue, float H, float S, float V);
 __device__ double mandelIter(double cx, double cy, int maxIter);
 double normalize(double value, double localMin, double localMax, double min, double max);
+double normalize(double value, double localMin, double localMax, double min, double max);
 sf::Texture mandelbrot(int width, int height, double xmin, double xmax, double ymin, double ymax, int iterations);
 __global__ void mandel_kernel(int width, int height, double xmin, double xmax, double ymin, double ymax, int iterations, sf::Uint8* pixels);
 
 int main()
 {
-	unsigned int width = 1920;
-	unsigned int height = 1080;
+	unsigned int width = 1600;
+	unsigned int height = 900;
 
 	sf::RenderWindow window(sf::VideoMode(width, height), "mandelbrot");
 
@@ -20,6 +21,12 @@ int main()
 
 	sf::Texture mandelTexture;
 	sf::Sprite mandelSprite;
+
+  sf::RectangleShape zoomBorder(sf::Vector2f(width / 8, height / 8));
+	zoomBorder.setFillColor(sf::Color(0, 0, 0, 0));
+	zoomBorder.setOutlineColor(sf::Color(255, 255, 255, 128));
+	zoomBorder.setOutlineThickness(1.0f);
+	zoomBorder.setOrigin(sf::Vector2f(zoomBorder.getSize().x / 2, zoomBorder.getSize().y / 2));
 
   sf::RectangleShape zoomBorder(sf::Vector2f(width / 8, height / 8));
 	zoomBorder.setFillColor(sf::Color(0, 0, 0, 0));
@@ -45,6 +52,12 @@ int main()
 	int precision = 64;
 
 	mandelTexture = mandelbrot(width, height, oxmin, oxmax, oymin, oymax, precision);
+
+  sf::Text zoomText, precText;
+	zoomText.setFillColor(sf::Color::White);
+	precText.setFillColor(sf::Color::White);
+	zoomText.setCharacterSize(24);
+	precText.setCharacterSize(24);
 
   sf::Text zoomText, precText;
 	zoomText.setFillColor(sf::Color::White);
@@ -83,7 +96,7 @@ int main()
 			case sf::Event::MouseWheelScrolled:
 				if (evnt.mouseWheelScroll.delta <= 0)
 				{
-					precision /= 2;
+					precision -= 10;
           if (precision <= 4)
           {
             exit(0);
@@ -91,50 +104,39 @@ int main()
 				}
 				else
 				{
-					precision *= 2;
+					precision += 10;
 				}
 				mandelTexture = mandelbrot(width, height, xmin, xmax, ymin, ymax, precision);
 				break;
 			}
 		}
 
-    	if (evnt.type == sf::Event::MouseButtonPressed)
+    if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 		{
-			if (evnt.mouseButton.button == sf::Mouse::Left && lock_click != true) //specifies
-      		{
-				recLevel++;
+			recLevel++;
 
-				double x = zoomBorder.getPosition().x - zoomBorder.getSize().x / 2;
-				double y = zoomBorder.getPosition().y - zoomBorder.getSize().y / 2;
+			double x = zoomBorder.getPosition().x - zoomBorder.getSize().x / 2;
+			double y = zoomBorder.getPosition().y - zoomBorder.getSize().y / 2;
 
-				double x2 = x + zoomBorder.getSize().x;
-				double y2 = y + zoomBorder.getSize().y;
+			double x2 = x + zoomBorder.getSize().x;
+			double y2 = y + zoomBorder.getSize().y;
 
-				//from px range to grid range
-				double normX = normalize(x, 0.0, width, xmin, xmax);
-				double normY = normalize(y, 0.0, height, ymin, ymax);
+			//from px range to grid range
+			double normX = normalize(x, 0.0, width, xmin, xmax);
+			double normY = normalize(y, 0.0, height, ymin, ymax);
 
-				double widthNorm = normalize(x2, 0.0, width, xmin, xmax);
-				double heightNorm = normalize(y2, 0.0, height, ymin, ymax);
+			double widthNorm = normalize(x2, 0.0, width, xmin, xmax);
+			double heightNorm = normalize(y2, 0.0, height, ymin, ymax);
 
-				xmin = normX;
-				xmax = widthNorm;
-				ymin = normY;
-				ymax = heightNorm;
+			xmin = normX;
+			xmax = widthNorm;
+			ymin = normY;
+			ymax = heightNorm;
 
-				mandelTexture = mandelbrot(width, height, xmin, xmax, ymin, ymax, precision);
-				lock_click = true;
-			}
+			mandelTexture = mandelbrot(width, height, xmin, xmax, ymin, ymax, precision);
 		}
 
-		if (evnt.type == sf::Event::MouseButtonReleased) 
-  		{
-      		if (evnt.mouseButton.button == sf::Mouse::Left)
-      		{
-          		lock_click = false;
-      		}
-  		} //Released Scope
-		zoomText.setString("Zoom: " + std::to_string(pow(8, recLevel - 1)));
+    zoomText.setString("Zoom: " + std::to_string(pow(8, recLevel-1)));
 		precText.setString("Max. Iterations: " + std::to_string(precision));
 		precText.setPosition(sf::Vector2f(0, 32));
 
@@ -146,7 +148,7 @@ int main()
 		window.clear(sf::Color::White);
 
 		window.draw(mandelSprite);
-		window.draw(zoomText);
+    window.draw(zoomText);
 		window.draw(precText);
 		window.draw(zoomBorder);
 
@@ -154,6 +156,15 @@ int main()
 	}
 
 	return 0;
+}
+
+
+double normalize(double value, double localMin, double localMax, double min, double max)
+{
+	double normalized = (value - localMin) / (localMax - localMin);
+	normalized = normalized * (max - min);
+	normalized += min;
+	return normalized;
 }
 
 
@@ -230,8 +241,8 @@ void mandel_kernel(int width, int height, double xmin, double xmax, double ymin,
     int R, G, B;
     HSVtoRGB(&R, &G, &B, hue, sat, val);
     pixels[ppos] = B;
-    pixels[ppos + 1] = G;
-    pixels[ppos + 2] = G*2;
+    pixels[ppos + 1] = B;
+    pixels[ppos + 2] = 255;
     pixels[ppos + 3] = 255;
 	}
 }
@@ -248,7 +259,7 @@ void HSVtoRGB(int* red, int* green, int* blue, float H, float S, float V)
 	float s = S / 100;
 	float v = V / 100;
 	float C = s * v;
-	float X = C * (1 - abs(fmod(H / 60.0, 2) - 1));
+	float X = C * (1 - abs(fmodf(H / 60.0, 2) - 1));
 	float m = v - C;
 	float r, g, b;
 	if (H >= 0 && H < 60) {
