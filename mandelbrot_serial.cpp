@@ -14,7 +14,7 @@ bool makeJulia = true;
 int main()
 {
 	unsigned int width = 1600; 
-	unsigned int height = 1200;
+	unsigned int height = 900;
 
 	sf::RenderWindow window(sf::VideoMode(width, height), "mandelbrot");
 

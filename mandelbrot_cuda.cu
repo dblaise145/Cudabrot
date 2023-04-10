@@ -6,7 +6,6 @@
 __device__ void HSVtoRGB(int* red, int* green, int* blue, float H, float S, float V);
 __device__ double mandelIter(double cx, double cy, int maxIter);
 double normalize(double value, double localMin, double localMax, double min, double max);
-double normalize(double value, double localMin, double localMax, double min, double max);
 sf::Texture mandelbrot(int width, int height, double xmin, double xmax, double ymin, double ymax, int iterations);
 sf::Texture julia(int width, int height, double cRe, double cIm, int iterations);
 __global__ void mandel_kernel(int width, int height, double xmin, double xmax, double ymin, double ymax, int iterations, sf::Uint8* pixels);
@@ -78,7 +77,6 @@ int main()
 					ymin = oymin;
 					ymax = oymax;
 				}
-
 				if (makeJulia)
           {
             mandelTexture = julia(width, height, cRe, cIm, precision);
@@ -91,7 +89,7 @@ int main()
 			case sf::Event::MouseWheelScrolled:
 				if (evnt.mouseWheelScroll.delta <= 0)
 				{
-					precision -= 10;
+					precision /= 2;
           if (precision <= 4)
           {
             exit(0);
@@ -99,7 +97,7 @@ int main()
 				}
 				else
 				{
-					precision += 10;
+					precision *= 2;
 				}
 				if (makeJulia)
         {
@@ -192,8 +190,6 @@ sf::Texture julia(int width, int height, double cRe, double cIm, int iterations)
   cudaDeviceSynchronize();
   STOP_TIMER(prec);
   printf("PREC: %d TIME: %8.4fs\n", iterations,  GET_TIMER(prec));
-
-
 
   texture.update(pixels, width, height, 0, 0);
 
