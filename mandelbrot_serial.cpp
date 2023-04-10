@@ -102,7 +102,8 @@ int main()
         {
           mandelTexture = julia(width, height, cRe, cIm, precision);
         }
-        else{
+        else
+        {
           mandelTexture = mandelbrot(width, height, oxmin, oxmax, oymin, oymax, precision);
         }
 				break;
@@ -217,9 +218,9 @@ sf::Texture julia(int width, int height, double cRe, double cIm, int iterations)
         if((zx * zx + zy * zy) > 4) break;
       }
       sf::Color hsvtorgb = HSVtoRGB((int)(255 * i / iterations), 100, (i > iterations) ? 0 : 100);
-      pixels[ppos] = (int)hsvtorgb.r;
+      pixels[ppos] = (int)hsvtorgb.b;
 			pixels[ppos + 1] = (int)hsvtorgb.g;
-			pixels[ppos + 2] = (int)hsvtorgb.b;
+			pixels[ppos + 2] = (int)hsvtorgb.g * 2;
 			pixels[ppos + 3] = 255;
     }
   }
