@@ -7,6 +7,9 @@ sf::Color HSVtoRGB(float H, float S, float V);
 double normalize(double value, double localMin, double localMax, double min, double max);
 double mandelIter(double cx, double cy, int maxIter);
 sf::Texture mandelbrot(int width, int height, double xmin, double xmax, double ymin, double ymax, int iterations);
+sf::Texture julia(int width, int height, double cRe, double cIm, int iterations);
+
+bool makeJulia = true;
 
 int main()
 {
@@ -19,6 +22,9 @@ int main()
 
 	sf::Texture mandelTexture;
 	sf::Sprite mandelSprite;
+
+  double cRe = -.7;
+  double cIm = .27015;
 
 
 	double oxmin = -2.4;
@@ -34,9 +40,15 @@ int main()
 	double ymax = oymax;
 
 	int recLevel = 1;
-	int precision = 64;
+	int precision = 512;
 
-	mandelTexture = mandelbrot(width, height, oxmin, oxmax, oymin, oymax, precision);
+  if (makeJulia)
+  {
+    mandelTexture = julia(width, height, cRe, cIm, precision);
+  }
+  else{
+    mandelTexture = mandelbrot(width, height, oxmin, oxmax, oymin, oymax, precision);
+  }
 
 
 
@@ -64,7 +76,13 @@ int main()
 					ymin = oymin;
 					ymax = oymax;
 				}
-				mandelTexture = mandelbrot(width, height, xmin, xmax, ymin, ymax, precision);
+				if (makeJulia)
+        {
+          mandelTexture = julia(width, height, cRe, cIm, precision);
+        }
+        else{
+          mandelTexture = mandelbrot(width, height, oxmin, oxmax, oymin, oymax, precision);
+        }
 				break;
 			case sf::Event::MouseWheelScrolled:
 				if (evnt.mouseWheelScroll.delta <= 0)
@@ -79,7 +97,13 @@ int main()
 				{
 					precision *= 2;
 				}
-				mandelTexture = mandelbrot(width, height, xmin, xmax, ymin, ymax, precision);
+				if (makeJulia)
+        {
+          mandelTexture = julia(width, height, cRe, cIm, precision);
+        }
+        else{
+          mandelTexture = mandelbrot(width, height, oxmin, oxmax, oymin, oymax, precision);
+        }
 
 				break;
 			}
@@ -157,6 +181,51 @@ sf::Texture mandelbrot(int width, int height, double xmin, double xmax, double y
   printf("PREC: %d TIME: %8.4fs\n", iterations,  GET_TIMER(prec));
 
 	texture.update(pixels, width, height, 0, 0);
+
+	delete[] pixels;
+
+	return texture;
+}
+
+
+sf::Texture julia(int width, int height, double cRe, double cIm, int iterations)
+{
+  sf::Texture texture;
+  texture.create(width, height);
+
+  sf::Uint8* pixels = new sf::Uint8[width * height * 4];
+
+  START_TIMER(prec);
+  for (int ix = 0; ix < width; ix++)
+  {
+    for (int iy = 0; iy < height; iy++)
+    {
+      int ppos = 4 * (width * iy + ix);
+      double zx = 1.5 * (ix - width / 2) / (.5 * width);
+      double zy = (iy - height / 2) / (.5 * height);
+
+      int i;
+
+      for (i = 0; i < iterations; i++)
+      {
+        double oldzx = zx;
+        double oldzy = zy;
+
+        zx = oldzx * oldzx - oldzy * oldzy + cRe;
+        zy = 2 * oldzx * oldzy + cIm;
+
+        if((zx * zx + zy * zy) > 4) break;
+      }
+      sf::Color hsvtorgb = HSVtoRGB((int)(255 * i / iterations), 100, (i > iterations) ? 0 : 100);
+      pixels[ppos] = (int)hsvtorgb.r;
+			pixels[ppos + 1] = (int)hsvtorgb.g;
+			pixels[ppos + 2] = (int)hsvtorgb.b;
+			pixels[ppos + 3] = 255;
+    }
+  }
+  STOP_TIMER(prec);
+  printf("PREC: %d TIME: %8.4fs\n", iterations,  GET_TIMER(prec));
+  texture.update(pixels, width, height, 0, 0);
 
 	delete[] pixels;
 
