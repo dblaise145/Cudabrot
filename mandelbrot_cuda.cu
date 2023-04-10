@@ -218,8 +218,8 @@ void mandel_kernel(int width, int height, double xmin, double xmax, double ymin,
     int R, G, B;
     HSVtoRGB(&R, &G, &B, hue, sat, val);
     pixels[ppos] = B;
-    pixels[ppos + 1] = B;
-    pixels[ppos + 2] = 255;
+    pixels[ppos + 1] = G;
+    pixels[ppos + 2] = G * 2;
     pixels[ppos + 3] = 255;
 	}
 }
