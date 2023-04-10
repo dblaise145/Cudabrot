@@ -28,12 +28,6 @@ int main()
 	zoomBorder.setOutlineThickness(1.0f);
 	zoomBorder.setOrigin(sf::Vector2f(zoomBorder.getSize().x / 2, zoomBorder.getSize().y / 2));
 
-  sf::RectangleShape zoomBorder(sf::Vector2f(width / 8, height / 8));
-	zoomBorder.setFillColor(sf::Color(0, 0, 0, 0));
-	zoomBorder.setOutlineColor(sf::Color(255, 255, 255, 128));
-	zoomBorder.setOutlineThickness(1.0f);
-	zoomBorder.setOrigin(sf::Vector2f(zoomBorder.getSize().x / 2, zoomBorder.getSize().y / 2));
-
 
 
 	double oxmin = -2.4;
@@ -58,14 +52,6 @@ int main()
 	precText.setFillColor(sf::Color::White);
 	zoomText.setCharacterSize(24);
 	precText.setCharacterSize(24);
-
-  sf::Text zoomText, precText;
-	zoomText.setFillColor(sf::Color::White);
-	precText.setFillColor(sf::Color::White);
-	zoomText.setCharacterSize(24);
-	precText.setCharacterSize(24);
-
-
 
 
 	while (window.isOpen())
@@ -156,15 +142,6 @@ int main()
 	}
 
 	return 0;
-}
-
-
-double normalize(double value, double localMin, double localMax, double min, double max)
-{
-	double normalized = (value - localMin) / (localMax - localMin);
-	normalized = normalized * (max - min);
-	normalized += min;
-	return normalized;
 }
 
 

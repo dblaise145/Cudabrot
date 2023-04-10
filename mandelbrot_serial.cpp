@@ -10,9 +10,6 @@ sf::Texture mandelbrot(int width, int height, double xmin, double xmax, double y
 sf::Texture julia(int width, int height, double cRe, double cIm, int iterations);
 
 bool makeJulia = true;
-sf::Texture julia(int width, int height, double cRe, double cIm, int iterations);
-
-bool makeJulia = true;
 
 int main()
 {
@@ -45,13 +42,6 @@ int main()
 	int recLevel = 1;
 	int precision = 512;
 
-  if (makeJulia)
-  {
-    mandelTexture = julia(width, height, cRe, cIm, precision);
-  }
-  else{
-    mandelTexture = mandelbrot(width, height, oxmin, oxmax, oymin, oymax, precision);
-  }
   if (makeJulia)
   {
     mandelTexture = julia(width, height, cRe, cIm, precision);
@@ -94,13 +84,6 @@ int main()
             mandelTexture = mandelbrot(width, height, oxmin, oxmax, oymin, oymax, precision);
           }
 				}
-				if (makeJulia)
-        {
-          mandelTexture = julia(width, height, cRe, cIm, precision);
-        }
-        else{
-          mandelTexture = mandelbrot(width, height, oxmin, oxmax, oymin, oymax, precision);
-        }
 				break;
 			case sf::Event::MouseWheelScrolled:
 				if (evnt.mouseWheelScroll.delta <= 0)
@@ -122,14 +105,6 @@ int main()
         else{
           mandelTexture = mandelbrot(width, height, oxmin, oxmax, oymin, oymax, precision);
         }
-				if (makeJulia)
-        {
-          mandelTexture = julia(width, height, cRe, cIm, precision);
-        }
-        else{
-          mandelTexture = mandelbrot(width, height, oxmin, oxmax, oymin, oymax, precision);
-        }
-
 				break;
 			}
 		}
