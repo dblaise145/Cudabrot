@@ -10,22 +10,24 @@ sf::Texture mandelbrot(int width, int height, double xmin, double xmax, double y
 sf::Texture julia(int width, int height, double cRe, double cIm, int iterations);
 __global__ void mandel_kernel(int width, int height, double xmin, double xmax, double ymin, double ymax, int iterations, sf::Uint8* pixels);
 __global__ void julia_kernel(int width, int height, double cRe, double cIm, int iterations, sf::Uint8* pixels);
+sf::Texture transform_pixels(int width, int height);
+__global__ void transform_kernel(int width, int height, sf::Uint8* pixels);
 
-
-bool makeJulia = true;
+sf::Uint8* current_pixels;
+bool makeJulia = false;
 
 int main()
 {
 	unsigned int width = 1600;
 	unsigned int height = 900;
-
+	// for color transformations, keep a copy of the pixels in vram.
+	cudaMallocManaged(&current_pixels, sizeof(sf::Uint8)*(width * height * 4));
 	sf::RenderWindow window(sf::VideoMode(width, height), "mandelbrot");
 
 	window.setFramerateLimit(144);
 
 	sf::Texture mandelTexture;
 	sf::Sprite mandelSprite;
-
 
   double cRe = -.7;
   double cIm = .27015;
@@ -77,6 +79,11 @@ int main()
 					ymin = oymin;
 					ymax = oymax;
 				}
+				else if (evnt.key.code == sf::Keyboard::Key::J) 
+				{
+					mandelTexture = transform_pixels(width, height);
+					break;
+				}
 				if (makeJulia)
           {
             mandelTexture = julia(width, height, cRe, cIm, precision);
@@ -106,7 +113,7 @@ int main()
         else
         {
           mandelTexture = mandelbrot(width, height, oxmin, oxmax, oymin, oymax, precision);
-        }
+        }	
 				break;
 			}
 		}
@@ -169,11 +176,46 @@ sf::Texture mandelbrot(int width, int height, double xmin, double xmax, double y
 
 
 	texture.update(pixels, width, height, 0, 0);
-
+	// update current pixels with the new pixels
+	cudaMemcpy(current_pixels, pixels, sizeof(sf::Uint8)*(width * height * 4), cudaMemcpyDeviceToDevice);
 	cudaFree(pixels);
 
 	return texture;
 }
+
+sf::Texture transform_pixels(int width, int height) {
+
+	sf::Texture texture;
+	texture.create(width, height);
+	// kernel will update pixels.
+	START_TIMER(prec);
+	transform_kernel<<<512, 512>>>(width, height, current_pixels);
+	cudaDeviceSynchronize();
+	STOP_TIMER(prec);
+  	printf("Transform TIME: %8.4fs\n", GET_TIMER(prec));
+	texture.update(current_pixels, width, height, 0, 0);
+	return texture;
+}
+
+__global__ void transform_kernel(int width, int height, sf::Uint8* pixels) {
+int transform_const = 50;
+int i = blockIdx.x * blockDim.x + threadIdx.x;
+	for (; i < width * height; i += blockDim.x * gridDim.x)
+	{
+      int row = i / width;
+      int col = i % width;
+      int ppos = 4 * (width * row + col);
+      double zx = 1.5 * (col - width / 2) / (.5 * width);
+      double zy = (row - height / 2) / (.5 * height);
+
+      pixels[ppos] = pixels[ppos] ^ pixels[ppos + 1];
+      pixels[ppos + 1] = pixels[ppos + 1] ^ pixels[ppos + 2];
+      pixels[ppos + 2] = pixels[ppos + 2] ^ pixels[ppos + 3];
+	  pixels[ppos + 3] = 255;
+    }
+}
+
+
 
 
 sf::Texture julia(int width, int height, double cRe, double cIm, int iterations)
@@ -192,11 +234,13 @@ sf::Texture julia(int width, int height, double cRe, double cIm, int iterations)
   printf("PREC: %d TIME: %8.4fs\n", iterations,  GET_TIMER(prec));
 
   texture.update(pixels, width, height, 0, 0);
-
+	// update current pixels with the new pixels
+	cudaMemcpy(current_pixels, pixels, sizeof(sf::Uint8)*(width * height * 4), cudaMemcpyDeviceToDevice);
 	cudaFree(pixels);
 
 	return texture;
 }
+
 
 
 __global__
