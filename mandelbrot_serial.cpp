@@ -2,20 +2,22 @@
 #include <math.h>
 #include <iostream>
 #include "timer.h"
-
+#include <stdio.h>
+#include <string.h>
 sf::Color HSVtoRGB(float H, float S, float V);
 double normalize(double value, double localMin, double localMax, double min, double max);
 double mandelIter(double cx, double cy, int maxIter);
 sf::Texture mandelbrot(int width, int height, double xmin, double xmax, double ymin, double ymax, int iterations);
 sf::Texture julia(int width, int height, double cRe, double cIm, int iterations);
+sf::Texture transform_pixels(int width, int height);
 
 bool makeJulia = true;
-
+sf::Uint8* current_pixels;
 int main()
 {
 	unsigned int width = 1600; 
 	unsigned int height = 900;
-
+	current_pixels = new sf::Uint8[width * height * 4];
 	sf::RenderWindow window(sf::VideoMode(width, height), "mandelbrot");
 
 	window.setFramerateLimit(144);
@@ -75,7 +77,12 @@ int main()
 					yRange = oyRange;
 					ymin = oymin;
 					ymax = oymax;
-
+				}
+				else if (evnt.key.code == sf::Keyboard::Key::J) 
+				{
+					mandelTexture = transform_pixels(width, height);
+					break;
+				}
           if (makeJulia)
           {
             mandelTexture = julia(width, height, cRe, cIm, precision);
@@ -83,7 +90,7 @@ int main()
           else{
             mandelTexture = mandelbrot(width, height, oxmin, oxmax, oymin, oymax, precision);
           }
-				}
+				
 				break;
 			case sf::Event::MouseWheelScrolled:
 				if (evnt.mouseWheelScroll.delta <= 0)
@@ -182,9 +189,30 @@ sf::Texture mandelbrot(int width, int height, double xmin, double xmax, double y
   printf("PREC: %d TIME: %8.4fs\n", iterations,  GET_TIMER(prec));
 
 	texture.update(pixels, width, height, 0, 0);
-
+	memcpy(current_pixels, pixels, width * height * 4 );
 	delete[] pixels;
 
+	return texture;
+}
+
+sf::Texture transform_pixels(int width, int height) {
+	START_TIMER(prec);
+	for (int ix = 0; ix < width; ix++)
+  {
+    for (int iy = 0; iy < height; iy++)
+    {
+		      int ppos = 4 * (width * iy + ix);
+	  current_pixels[ppos] = current_pixels[ppos] ^ current_pixels[ppos + 1];
+      current_pixels[ppos + 1] = current_pixels[ppos + 1] ^ current_pixels[ppos + 2];
+      current_pixels[ppos + 2] = current_pixels[ppos + 2] ^ current_pixels[ppos + 3];
+	  current_pixels[ppos + 3] = 255;
+    }
+  }
+  	STOP_TIMER(prec);
+	printf("Transform TIME: %8.4fs\n", GET_TIMER(prec));
+  	sf::Texture texture;
+	texture.create(width, height);
+	texture.update(current_pixels, width, height, 0, 0);
 	return texture;
 }
 
@@ -227,7 +255,7 @@ sf::Texture julia(int width, int height, double cRe, double cIm, int iterations)
   STOP_TIMER(prec);
   printf("PREC: %d TIME: %8.4fs\n", iterations,  GET_TIMER(prec));
   texture.update(pixels, width, height, 0, 0);
-
+	memcpy(current_pixels, pixels, width * height * 4 );
 	delete[] pixels;
 
 	return texture;
