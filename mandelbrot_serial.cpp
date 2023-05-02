@@ -83,14 +83,42 @@ int main()
 					mandelTexture = transform_pixels(width, height);
 					break;
 				}
-          if (makeJulia)
+        else if (evnt.key.code == sf::Keyboard::Key::A)
+        {
+          if(makeJulia)
           {
+            cRe-=.01;
+            cIm-=.01;
             mandelTexture = julia(width, height, cRe, cIm, precision);
           }
-          else{
-            mandelTexture = mandelbrot(width, height, oxmin, oxmax, oymin, oymax, precision);
+        }
+        else if (evnt.key.code == sf::Keyboard::Key::D)
+        {
+          if(makeJulia)
+          {
+            cRe+=.01;
+            cIm+=.01;
+            mandelTexture = julia(width, height, cRe, cIm, precision);
           }
-				
+        }
+        else if (evnt.key.code == sf::Keyboard::Key::W)
+        {
+          if(makeJulia)
+          {
+            cRe+=.01;
+            cIm-=.01;
+            mandelTexture = julia(width, height, cRe, cIm, precision);
+          }
+        }
+        else if (evnt.key.code == sf::Keyboard::Key::S)
+        {
+          if(makeJulia)
+          {
+            cRe-=.01;
+            cIm+=.01;
+            mandelTexture = julia(width, height, cRe, cIm, precision);
+          }
+        }
 				break;
 			case sf::Event::MouseWheelScrolled:
 				if (evnt.mouseWheelScroll.delta <= 0)
