@@ -14,7 +14,7 @@ sf::Texture transform_pixels(int width, int height);
 __global__ void transform_kernel(int width, int height, sf::Uint8* pixels);
 
 sf::Uint8* current_pixels;
-bool makeJulia = false;
+bool makeJulia = true;
 
 int main()
 {
@@ -28,6 +28,12 @@ int main()
 
 	sf::Texture mandelTexture;
 	sf::Sprite mandelSprite;
+
+  sf::RectangleShape zoomBorder(sf::Vector2f(width / 8, height / 8));
+	zoomBorder.setFillColor(sf::Color(0, 0, 0, 0));
+	zoomBorder.setOutlineColor(sf::Color(255, 255, 255, 128));
+	zoomBorder.setOutlineThickness(1.0f);
+	zoomBorder.setOrigin(sf::Vector2f(zoomBorder.getSize().x / 2, zoomBorder.getSize().y / 2));
 
   double cRe = -.7;
   double cIm = .27015;
@@ -84,15 +90,43 @@ int main()
 					mandelTexture = transform_pixels(width, height);
 					break;
 				}
-				if (makeJulia)
+        else if (evnt.key.code == sf::Keyboard::Key::A)
+        {
+          if(makeJulia)
           {
+            cRe-=.01;
+            cIm-=.01;
             mandelTexture = julia(width, height, cRe, cIm, precision);
           }
-        else
+        }
+        else if (evnt.key.code == sf::Keyboard::Key::D)
+        {
+          if(makeJulia)
           {
-            mandelTexture = mandelbrot(width, height, oxmin, oxmax, oymin, oymax, precision);
+            cRe+=.01;
+            cIm+=.01;
+            mandelTexture = julia(width, height, cRe, cIm, precision);
           }
-				break;
+        }
+        else if (evnt.key.code == sf::Keyboard::Key::W)
+        {
+          if(makeJulia)
+          {
+            cRe+=.01;
+            cIm-=.01;
+            mandelTexture = julia(width, height, cRe, cIm, precision);
+          }
+        }
+        else if (evnt.key.code == sf::Keyboard::Key::S)
+        {
+          if(makeJulia)
+          {
+            cRe-=.01;
+            cIm+=.01;
+            mandelTexture = julia(width, height, cRe, cIm, precision);
+          }
+        }
+        break;
 			case sf::Event::MouseWheelScrolled:
 				if (evnt.mouseWheelScroll.delta <= 0)
 				{
@@ -112,17 +146,52 @@ int main()
         }
         else
         {
-          mandelTexture = mandelbrot(width, height, oxmin, oxmax, oymin, oymax, precision);
+          mandelTexture = mandelbrot(width, height, xmin, xmax, ymin, ymax, precision);
         }	
 				break;
 			}
 		}
+
+    if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+		{
+      if (!makeJulia)
+      {
+        recLevel++;
+
+        double x = zoomBorder.getPosition().x - zoomBorder.getSize().x / 2;
+        double y = zoomBorder.getPosition().y - zoomBorder.getSize().y / 2;
+
+        double x2 = x + zoomBorder.getSize().x;
+        double y2 = y + zoomBorder.getSize().y;
+
+        //from px range to grid range
+        double normX = normalize(x, 0.0, width, xmin, xmax);
+        double normY = normalize(y, 0.0, height, ymin, ymax);
+
+        double widthNorm = normalize(x2, 0.0, width, xmin, xmax);
+        double heightNorm = normalize(y2, 0.0, height, ymin, ymax);
+
+        xmin = normX;
+        xmax = widthNorm;
+        ymin = normY;
+        ymax = heightNorm;
+
+        mandelTexture = mandelbrot(width, height, xmin, xmax, ymin, ymax, precision);
+      }
+		}
+
+
+    zoomBorder.setPosition(sf::Mouse::getPosition(window).x, sf::Mouse::getPosition(window).y);
 
 		mandelSprite.setTexture(mandelTexture);
 
 		window.clear(sf::Color::White);
 
 		window.draw(mandelSprite);
+    if (!makeJulia)
+    {
+      window.draw(zoomBorder);
+    }
 
 		window.display();
 	}
