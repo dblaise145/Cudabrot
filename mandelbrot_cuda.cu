@@ -88,7 +88,10 @@ int main()
 				}
 				else if (evnt.key.code == sf::Keyboard::Key::T) 
 				{
+          START_TIMER(prec);
 					mandelTexture = transform_pixels(width, height);
+          	STOP_TIMER(prec);
+  	        printf("Transform TIME: %8.4fs\n", GET_TIMER(prec));
             transform_count = (transform_count + 1) % 3;
 					break;
 				}
@@ -298,11 +301,8 @@ sf::Texture transform_pixels(int width, int height) {
 	sf::Texture texture;
 	texture.create(width, height);
 	// kernel will update pixels.
-	START_TIMER(prec);
 	transform_kernel<<<512, 512>>>(width, height, current_pixels);
 	cudaDeviceSynchronize();
-	STOP_TIMER(prec);
-  	printf("Transform TIME: %8.4fs\n", GET_TIMER(prec));
 	texture.update(current_pixels, width, height, 0, 0);
 	return texture;
 }

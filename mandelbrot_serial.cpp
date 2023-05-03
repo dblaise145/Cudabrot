@@ -88,7 +88,10 @@ int main()
 				}
 				else if (evnt.key.code == sf::Keyboard::Key::T) 
 				{
+					START_TIMER(prec);
 					mandelTexture = transform_pixels(width, height);
+          			STOP_TIMER(prec);
+  	       		    printf("Transform TIME: %8.4fs\n", GET_TIMER(prec));
 					transform_count = (transform_count + 1) % 3;
 					break;
 				}
@@ -99,6 +102,10 @@ int main()
             cRe-=.01;
             cIm-=.01;
             mandelTexture = julia(width, height, cRe, cIm, precision);
+					  			              for(int i = 0; i < transform_count; i++)
+              {
+                mandelTexture = transform_pixels(width, height);
+              }
 			
           }
         }
@@ -109,6 +116,10 @@ int main()
             cRe+=.01;
             cIm+=.01;
             mandelTexture = julia(width, height, cRe, cIm, precision);
+					  			              for(int i = 0; i < transform_count; i++)
+              {
+                mandelTexture = transform_pixels(width, height);
+              }
           }
         }
         else if (evnt.key.code == sf::Keyboard::Key::W)
@@ -118,6 +129,10 @@ int main()
             cRe+=.01;
             cIm-=.01;
             mandelTexture = julia(width, height, cRe, cIm, precision);
+					  			              for(int i = 0; i < transform_count; i++)
+              {
+                mandelTexture = transform_pixels(width, height);
+              }
           }
         }
         else if (evnt.key.code == sf::Keyboard::Key::S)
@@ -127,6 +142,10 @@ int main()
             cRe-=.01;
             cIm+=.01;
             mandelTexture = julia(width, height, cRe, cIm, precision);
+					  			              for(int i = 0; i < transform_count; i++)
+              {
+                mandelTexture = transform_pixels(width, height);
+              }
           }
         }
         else if (evnt.key.code == sf::Keyboard::Key::J)
@@ -263,7 +282,6 @@ sf::Texture mandelbrot(int width, int height, double xmin, double xmax, double y
 }
 
 sf::Texture transform_pixels(int width, int height) {
-	START_TIMER(prec);
 	for (int ix = 0; ix < width; ix++)
   {
     for (int iy = 0; iy < height; iy++)
@@ -278,8 +296,6 @@ sf::Texture transform_pixels(int width, int height) {
 	  current_pixels[ppos + 3] = 255;
     }
   }
-  	STOP_TIMER(prec);
-	printf("Transform TIME: %8.4fs\n", GET_TIMER(prec));
   	sf::Texture texture;
 	texture.create(width, height);
 	texture.update(current_pixels, width, height, 0, 0);
