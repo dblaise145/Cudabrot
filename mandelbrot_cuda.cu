@@ -15,7 +15,7 @@ __global__ void transform_kernel(int width, int height, sf::Uint8* pixels);
 
 sf::Uint8* current_pixels;
 bool makeJulia = true;
-
+int transform_count = 0;
 int main()
 {
 	unsigned int width = 1600;
@@ -89,6 +89,7 @@ int main()
 				else if (evnt.key.code == sf::Keyboard::Key::T) 
 				{
 					mandelTexture = transform_pixels(width, height);
+            transform_count = (transform_count + 1) % 3;
 					break;
 				}
         else if (evnt.key.code == sf::Keyboard::Key::A)
@@ -98,6 +99,10 @@ int main()
             cRe-=.01;
             cIm-=.01;
             mandelTexture = julia(width, height, cRe, cIm, precision);
+            		  			              for(int i = 0; i < transform_count; i++)
+              {
+                mandelTexture = transform_pixels(width, height);
+              }
           }
         }
         else if (evnt.key.code == sf::Keyboard::Key::D)
@@ -107,6 +112,10 @@ int main()
             cRe+=.01;
             cIm+=.01;
             mandelTexture = julia(width, height, cRe, cIm, precision);
+            		  			              for(int i = 0; i < transform_count; i++)
+              {
+                mandelTexture = transform_pixels(width, height);
+              }
           }
         }
         else if (evnt.key.code == sf::Keyboard::Key::W)
@@ -116,6 +125,10 @@ int main()
             cRe+=.01;
             cIm-=.01;
             mandelTexture = julia(width, height, cRe, cIm, precision);
+            		  			              for(int i = 0; i < transform_count; i++)
+              {
+                mandelTexture = transform_pixels(width, height);
+              }
           }
         }
         else if (evnt.key.code == sf::Keyboard::Key::S)
@@ -125,6 +138,10 @@ int main()
             cRe-=.01;
             cIm+=.01;
             mandelTexture = julia(width, height, cRe, cIm, precision);
+            		  			              for(int i = 0; i < transform_count; i++)
+              {
+                mandelTexture = transform_pixels(width, height);
+              }
           }
         }
         else if (evnt.key.code == sf::Keyboard::Key::J)
@@ -157,10 +174,18 @@ int main()
 				if (makeJulia)
         {
           mandelTexture = julia(width, height, cRe, cIm, precision);
+              for(int i = 0; i < transform_count; i++)
+              {
+                mandelTexture = transform_pixels(width, height);
+              }
         }
         else
         {
           mandelTexture = mandelbrot(width, height, xmin, xmax, ymin, ymax, precision);
+              for(int i = 0; i < transform_count; i++)
+              {
+                mandelTexture = transform_pixels(width, height);
+              }
         }	
 				break;
 			}
@@ -191,6 +216,10 @@ int main()
         ymax = heightNorm;
 
         mandelTexture = mandelbrot(width, height, xmin, xmax, ymin, ymax, precision);
+                      for(int i = 0; i < transform_count; i++)
+              {
+                mandelTexture = transform_pixels(width, height);
+              }
       }
 		}
 
@@ -198,9 +227,7 @@ int main()
     zoomBorder.setPosition(sf::Mouse::getPosition(window).x, sf::Mouse::getPosition(window).y);
 
 		mandelSprite.setTexture(mandelTexture);
-
 		window.clear(sf::Color::White);
-
 		window.draw(mandelSprite);
     if (!makeJulia)
     {
@@ -290,10 +317,13 @@ int i = blockIdx.x * blockDim.x + threadIdx.x;
       int ppos = 4 * (width * row + col);
       double zx = 1.5 * (col - width / 2) / (.5 * width);
       double zy = (row - height / 2) / (.5 * height);
+      sf::Uint8 tmp_red = pixels[ppos];
+      sf::Uint8 tmp_blue = pixels[ppos + 1];
+      sf::Uint8 tmp_green = pixels[ppos + 2];
 
-      pixels[ppos] = pixels[ppos] ^ pixels[ppos + 1];
-      pixels[ppos + 1] = pixels[ppos + 1] ^ pixels[ppos + 2];
-      pixels[ppos + 2] = pixels[ppos + 2] ^ pixels[ppos + 3];
+      pixels[ppos] = tmp_blue;
+      pixels[ppos + 1] = tmp_green;
+      pixels[ppos + 2] = tmp_red;
 	    pixels[ppos + 3] = 255;
     }
 }
