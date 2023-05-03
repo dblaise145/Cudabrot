@@ -86,13 +86,26 @@ int main()
 				if (evnt.key.code == sf::Keyboard::Key::O)
 				{
 					recLevel = 1;
-					precision = 128;
+					precision = 512;
 
 					xmin = oxmin;
 					xmax = oxmax;
 					yRange = oyRange;
 					ymin = oymin;
 					ymax = oymax;
+          
+          cRe = -.7;
+          cIm = .27015;
+
+
+          if (makeJulia)
+          {
+            mandelTexture = julia(width, height, cRe, cIm, precision);
+          }
+          else
+          {
+            mandelTexture = mandelbrot(width, height, oxmin, oxmax, oymin, oymax, precision);
+          }
 				}
 				else if (evnt.key.code == sf::Keyboard::Key::T) 
 				{
