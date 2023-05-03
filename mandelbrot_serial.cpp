@@ -12,6 +12,7 @@ sf::Texture julia(int width, int height, double cRe, double cIm, int iterations)
 sf::Texture transform_pixels(int width, int height);
 int transform_count = 0;
 bool makeJulia = true;
+bool time_transform = false;
 sf::Uint8* current_pixels;
 int main()
 {
@@ -88,11 +89,10 @@ int main()
 				}
 				else if (evnt.key.code == sf::Keyboard::Key::T) 
 				{
-					START_TIMER(prec);
+          			time_transform = true;
 					mandelTexture = transform_pixels(width, height);
-          			STOP_TIMER(prec);
-  	       		    printf("Transform TIME: %8.4fs\n", GET_TIMER(prec));
-					transform_count = (transform_count + 1) % 3;
+          			transform_count = (transform_count + 1) % 3;
+          			time_transform = false;
 					break;
 				}
         else if (evnt.key.code == sf::Keyboard::Key::A)
@@ -282,6 +282,7 @@ sf::Texture mandelbrot(int width, int height, double xmin, double xmax, double y
 }
 
 sf::Texture transform_pixels(int width, int height) {
+	  START_TIMER(prec);
 	for (int ix = 0; ix < width; ix++)
   {
     for (int iy = 0; iy < height; iy++)
@@ -296,6 +297,11 @@ sf::Texture transform_pixels(int width, int height) {
 	  current_pixels[ppos + 3] = 255;
     }
   }
+    STOP_TIMER(prec);
+	  if(time_transform)
+  	  {
+ 		printf("Transform TIME: %8.4fs\n", GET_TIMER(prec));
+  	  }
   	sf::Texture texture;
 	texture.create(width, height);
 	texture.update(current_pixels, width, height, 0, 0);

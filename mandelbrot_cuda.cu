@@ -15,6 +15,7 @@ __global__ void transform_kernel(int width, int height, sf::Uint8* pixels);
 
 sf::Uint8* current_pixels;
 bool makeJulia = true;
+bool time_transform = false;
 int transform_count = 0;
 int main()
 {
@@ -88,11 +89,10 @@ int main()
 				}
 				else if (evnt.key.code == sf::Keyboard::Key::T) 
 				{
-          START_TIMER(prec);
+          time_transform = true;
 					mandelTexture = transform_pixels(width, height);
-          	STOP_TIMER(prec);
-  	        printf("Transform TIME: %8.4fs\n", GET_TIMER(prec));
-            transform_count = (transform_count + 1) % 3;
+          transform_count = (transform_count + 1) % 3;
+          time_transform = false;
 					break;
 				}
         else if (evnt.key.code == sf::Keyboard::Key::A)
@@ -301,8 +301,14 @@ sf::Texture transform_pixels(int width, int height) {
 	sf::Texture texture;
 	texture.create(width, height);
 	// kernel will update pixels.
+  START_TIMER(prec);
 	transform_kernel<<<512, 512>>>(width, height, current_pixels);
-	cudaDeviceSynchronize();
+  cudaDeviceSynchronize();
+  STOP_TIMER(prec);
+  if(time_transform)
+  {
+  printf("Transform TIME: %8.4fs\n", GET_TIMER(prec));
+  }
 	texture.update(current_pixels, width, height, 0, 0);
 	return texture;
 }
