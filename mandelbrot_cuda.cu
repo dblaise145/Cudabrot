@@ -321,7 +321,7 @@ sf::Texture transform_pixels(int width, int height) {
   STOP_TIMER(prec);
   if(time_transform)
   {
-  printf("Transform TIME: %8.4fs\n", GET_TIMER(prec));
+    printf("Transform TIME: %8.4fs\n", GET_TIMER(prec));
   }
 	texture.update(current_pixels, width, height, 0, 0);
 	return texture;

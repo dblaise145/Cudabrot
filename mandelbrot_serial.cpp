@@ -93,7 +93,7 @@ int main()
 					yRange = oyRange;
 					ymin = oymin;
 					ymax = oymax;
-          
+
           cRe = -.7;
           cIm = .27015;
 
@@ -340,7 +340,7 @@ sf::Texture mandelbrot(int width, int height, double xmin, double xmax, double y
 }
 
 sf::Texture transform_pixels(int width, int height) {
-	  START_TIMER(prec);
+	START_TIMER(prec);
 	for (int ix = 0; ix < width; ix++)
   {
     for (int iy = 0; iy < height; iy++)
@@ -355,12 +355,12 @@ sf::Texture transform_pixels(int width, int height) {
 	    current_pixels[ppos + 3] = 255;
     }
   }
-    STOP_TIMER(prec);
-	  if(time_transform)
-  	  {
- 		printf("Transform TIME: %8.4fs\n", GET_TIMER(prec));
-  	  }
-  	sf::Texture texture;
+  STOP_TIMER(prec);
+  if(time_transform)
+    {
+  printf("Transform TIME: %8.4fs\n", GET_TIMER(prec));
+    }
+  sf::Texture texture;
 	texture.create(width, height);
 	texture.update(current_pixels, width, height, 0, 0);
 	return texture;
