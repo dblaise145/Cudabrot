@@ -287,14 +287,14 @@ sf::Texture transform_pixels(int width, int height) {
   {
     for (int iy = 0; iy < height; iy++)
     {
-		      int ppos = 4 * (width * iy + ix);
- 	  sf::Uint8 tmp_red = current_pixels[ppos];
+		    int ppos = 4 * (width * iy + ix);
+ 	    sf::Uint8 tmp_red = current_pixels[ppos];
       sf::Uint8 tmp_blue = current_pixels[ppos + 1];
       sf::Uint8 tmp_green = current_pixels[ppos + 2];
       current_pixels[ppos] = tmp_blue;
       current_pixels[ppos + 1] = tmp_green;
       current_pixels[ppos + 2] = tmp_red;
-	  current_pixels[ppos + 3] = 255;
+	    current_pixels[ppos + 3] = 255;
     }
   }
     STOP_TIMER(prec);
